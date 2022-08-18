@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Custom 404{% endblock %}
+{% block main %}
+<div class="p-3 d-flex justify-content-center">
+    <div class="card col-6">
+        <div class="card-header">
+            Страница не найдена 404
+        </div>
+        <img src="{% static 'img/404.gif' %}" class="card-img-top" alt="Custom 404">
+        <div class="card-body">
+          <p class="card-text">Страницы с адресом {{ path }} не существует</p>
+          <a href="{% url 'posts:index' %}" class="btn btn-primary">Идите на главную</a>
+        </div>
+      </div>
+</div>
+{% endblock %}

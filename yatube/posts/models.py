@@ -95,11 +95,11 @@ class Comment(models.Model):
 
     class Meta:
         verbose_name = "Комментария"
-        verbose_name_plural = ("Коментарии")
+        verbose_name_plural = ("Комментарии")
         ordering = ['-created']
 
     def __str__(self):
-        return self.text
+        return self.text[:10]
 
 
 class Follow(models.Model):

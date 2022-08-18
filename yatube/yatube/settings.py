@@ -41,10 +41,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core.apps.CoreConfig',
+    'sorl.thumbnail',
+    'core',
     'posts.apps.PostsConfig',
-    'users.apps.UsersConfig',
-    'about.apps.AboutConfig',
+    'users',
+    'about',
 ]
 
 MIDDLEWARE = [
@@ -56,8 +57,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-ROOT_URLCONF = 'yatube.urls'
 
 TEMPLATES = [
     {
@@ -75,8 +74,11 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'yatube.wsgi.application'
-
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
@@ -107,6 +109,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+ROOT_URLCONF = 'yatube.urls'
+WSGI_APPLICATION = 'yatube.wsgi.application'
+
 
 # Redirect LOGIN and LOGOUT
 LOGIN_URL = 'users:login'
@@ -115,6 +120,9 @@ LOGIN_REDIRECT_URL = 'posts:index'
 
 # Paginator settings
 PAGE_SIZE = 10
+
+# CSRF settings
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
 
 # Internationalization
@@ -133,8 +141,10 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-STATICFILES_PATH = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
-
-
+STATICFILES_PATH = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [STATICFILES_PATH]
+
+# Media files (Loads media files on the server or on the local host)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

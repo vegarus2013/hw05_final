@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Custom 403{% endblock %}
+{% block main %}
+<div class="p-3 d-flex justify-content-center">
+    <div class="card col-6">
+        <div class="card-header">
+            Доступ запрещен - 403
+        </div>
+        <div class="card-body">
+          <p class="card-text">У вас нет прав к этой странице</p>
+        </div>
+      </div>
+</div>
+{% endblock %}

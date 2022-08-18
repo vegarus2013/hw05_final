@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
 
@@ -19,6 +20,7 @@ name_reverses = {
     'profile': reverse('posts:profile', kwargs={'username': name_users[0]}),
     'login': reverse('users:login'),
     'create_post': reverse('posts:post_create'),
+    'follow': reverse('posts:follow_index'),
     'about': reverse('about:author'),
     'fictin_link': '/fictin/link',
 }
@@ -71,6 +73,7 @@ class PostUrlTests(TestCase):
         """Создаем обычный пользователь"""
         self.another_client = Client()
         self.another_client.force_login(self.another_user)
+        cache.clear()
 
     def test_group_user_urls_status_code(self):
         """Проверяем всех пользователя на общей доступности"""
@@ -99,10 +102,12 @@ class PostUrlTests(TestCase):
                 self.assertEqual(response.status_code, http_status)
 
     def test_urls_uses_correct_template(self):
+        """URL-адрес использует соответствующий шаблон."""
         templates_url_names = [
             [name_reverses['index'], 'posts/index.html'],
             [name_reverses['group_list'], 'posts/group_list.html'],
             [name_reverses['profile'], 'posts/profile.html'],
+            [name_reverses['follow'], 'posts/follow.html'],
             [self.post_url, 'posts/post_detail.html'],
             [self.post_edit_url, 'posts/update_post.html'],
             [name_reverses['create_post'], 'posts/create_post.html']

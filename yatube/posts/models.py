@@ -81,12 +81,6 @@ class Comment(models.Model):
     )
     text = models.TextField(
         verbose_name='Текст комментарий',
-        validators=[
-            MinLengthValidator(
-                limit_value=1,
-                message=('Комментарий не может быть пустым')
-            )
-        ]
     )
     created = models.DateTimeField(
         verbose_name='Создан',

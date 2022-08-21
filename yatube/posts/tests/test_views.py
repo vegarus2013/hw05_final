@@ -174,7 +174,7 @@ class PaginatorViewsTest(TestCase):
         for response in responses:
             with self.subTest(response=response):
                 self.assertEqual(
-                    len(response.context['page_obj']),
+                    len(response.context['page_obj'].object_list),
                     settings.PAGE_SIZE)
 
     def test_last_page_content(self):
@@ -188,7 +188,7 @@ class PaginatorViewsTest(TestCase):
         for response in responses:
             with self.subTest(response=response):
                 self.assertEqual(
-                    len(response.context['page_obj']), 1)
+                    len(response.context['page_obj'].object_list), 1)
 
 
 class FollowViewsTest(TestCase):

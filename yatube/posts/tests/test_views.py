@@ -178,7 +178,7 @@ class PaginatorViewsTest(TestCase):
             with self.subTest(url=url):
                 response = self.guest_client.get(url)
                 self.assertEqual(
-                    len(response.context['page_obj'].object_list), page)
+                    len(response.context['page_obj']), page)
 
 
 class FollowViewsTest(TestCase):

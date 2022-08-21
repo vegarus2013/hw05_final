@@ -48,12 +48,10 @@ def profile(request, username):
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    comments = post.comments.all()
     form = CommentForm()
     context = {
         'post': post,
         'form': form,
-        'comments': comments,
     }
 
     return render(request, 'posts/post_detail.html', context)
@@ -137,10 +135,8 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
-    user_follower = get_object_or_404(
-        Follow,
-        user=request.user,
-        author__username=username
-    )
-    user_follower.delete()
-    return redirect('posts:profile', username=username)
+    user_follower = get_object_or_404(User, username=username)
+    is_following = user_follower.following.filter(user=request.user).exists()
+    if is_following:
+        user_follower.following.filter(user=request.user).delete()
+    return redirect('posts:profile', username=request.user)

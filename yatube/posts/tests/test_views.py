@@ -20,6 +20,8 @@ name_slugs = ['test_group', 'bag_slug']
 
 name_reverses = {
     'index': reverse('posts:index'),
+    'group': reverse('posts:group_list', kwargs={'slug': name_slugs[0]}),
+    'profile': reverse('posts:profile', kwargs={'username': name_users[0]}),
     'create_post': reverse('posts:post_create'),
     'follow': reverse('posts:follow_index')
 }
@@ -97,26 +99,20 @@ class PostViewsTests(TestCase):
                     forms.fields.ImageField
                 )
 
-    def test_index_page_show_correct_context(self):
-        """Шаблон index.html сформирован с правильным контекстом."""
-        response = self.author_client.get(reverse('posts:index'))
-        self.check_post_info(response.context['page_obj'][0])
+    def test_page_show_correct_context(self):
+        """Каждые шаблоны сформированы с правильным контекстом."""
+        response_list = [
+            [name_reverses['index'], '', ''],
+            [name_reverses['group'], 'group', self.group],
+            [name_reverses['profile'], 'author', self.user]
+        ]
 
-    def test_groups_page_show_correct_context(self):
-        """Шаблон group_list.html сформирован с правильным контекстом."""
-        response = self.author_client.get(
-            reverse('posts:group_list', kwargs={'slug': self.group.slug})
-        )
-        self.assertEqual(response.context['group'], self.group)
-        self.check_post_info(response.context['page_obj'][0])
-
-    def test_profile_page_show_correct_context(self):
-        """Шаблон profile.html сформирован с правильным контекстом."""
-        response = self.author_client.get(
-            reverse('posts:profile', kwargs={'username': self.user.username})
-        )
-        self.assertEqual(response.context['author'], self.user)
-        self.check_post_info(response.context['page_obj'][0])
+        for url, _get, _val in response_list:
+            with self.subTest(url=url):
+                response = self.author_client.get(url)
+                self.check_post_info(response.context['page_obj'][0])
+                if _get and _val:
+                    self.assertEqual(response.context[_get], _val)
 
     def test_detail_page_show_correct_context(self):
         """Шаблон post_detail.html сформирован с правильным контекстом."""
@@ -156,39 +152,44 @@ class PaginatorViewsTest(TestCase):
             description='Описание группы',
         )
 
-        for i in range(settings.PAGE_SIZE + 1):
-            Post.objects.create(
+        Post.objects.bulk_create(
+            Post(
                 text=f'Тестовые посты #{i}',
                 author=cls.user,
                 group=cls.group
             )
+            for i in range(settings.PAGE_SIZE + 1)
+        )
 
     def setUp(self):
         self.guest_client = Client()
 
-    def test_first_page_content(self):
-        response = self.guest_client.get(name_reverses['index'])
-        self.assertEqual(len(response.context['page_obj'].object_list),
-                         settings.PAGE_SIZE)
-
-    def test_second_page_content(self):
-        response = self.client.get(name_reverses['index'] + '?page=2')
-        self.assertEqual(len(response.context['page_obj'].object_list), 1)
+    def test_page_content(self):
+        page_num = 1
+        pages = [
+            [name_reverses['index'], settings.PAGE_SIZE],
+            [f"{name_reverses['index']}?page=2", page_num],
+            [name_reverses['group'], settings.PAGE_SIZE],
+            [f"{name_reverses['group']}?page=2", page_num],
+            [name_reverses['profile'], settings.PAGE_SIZE],
+            [f"{name_reverses['profile']}?page=2", page_num]
+        ]
+        for url, page in pages:
+            with self.subTest(url=url):
+                response = self.guest_client.get(url)
+                self.assertEqual(
+                    len(response.context['page_obj'].object_list), page)
 
 
 class FollowViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.author = User.objects.create(
+        cls.author = User.objects.create_user(
             username=name_users[0],
         )
-        cls.user = User.objects.create(
+        cls.user = User.objects.create_user(
             username=name_users[1],
-        )
-        cls.post = Post.objects.create(
-            text='Подпишись на меня',
-            author=cls.author,
         )
 
     def setUp(self):
@@ -216,10 +217,24 @@ class FollowViewsTest(TestCase):
             author=self.author
         )
         count_follow = Follow.objects.count()
-        self.user_client.post(
+        is_follow = Follow.objects.filter(
+            user=self.user,
+            author=self.author
+        ).exists()
+
+        if is_follow:
+            self.user_client.post(
+                reverse('posts:profile_unfollow',
+                        kwargs={'username': self.author})
+            )
+            self.assertEqual(Follow.objects.count(), count_follow - 1)
+
+        response = self.user_client.post(
             reverse('posts:profile_unfollow', kwargs={'username': self.author})
         )
-        self.assertEqual(Follow.objects.count(), count_follow - 1)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, f'/profile/{name_users[1]}/')
 
     def test_follow_on_authors(self):
         """Проверка записей у тех кто подписан."""

@@ -65,12 +65,11 @@ class PostUrlTests(TestCase):
         )
 
     def setUp(self):
-        """Создаем неавторизованный пользователь"""
         self.guest_client = Client()
-        """Создаем авторский  пользователь"""
+
         self.author_client = Client()
         self.author_client.force_login(self.author)
-        """Создаем обычный пользователь"""
+
         self.another_client = Client()
         self.another_client.force_login(self.another_user)
         cache.clear()

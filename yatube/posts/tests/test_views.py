@@ -165,17 +165,21 @@ class PaginatorViewsTest(TestCase):
         self.guest_client = Client()
 
     def test_first_page_content(self):
-        responses = [
-            self.guest_client.get(name_reverses['index']),
-            self.guest_client.get(name_reverses['group']),
-            self.guest_client.get(name_reverses['profile'])
-        ]
-
-        for response in responses:
-            with self.subTest(response=response):
-                self.assertEqual(
-                    len(response.context['page_obj'].object_list),
-                    settings.PAGE_SIZE)
+        response = self.guest_client.get(name_reverses['index']).context
+        self.assertEqual(
+            len(response.context['page_obj'].object_list),
+            settings.PAGE_SIZE
+        )
+        response = self.guest_client.get(name_reverses['group']).context
+        self.assertEqual(
+            len(response.context['page_obj'].object_list),
+            settings.PAGE_SIZE
+        )
+        response = self.guest_client.get(name_reverses['profile']).context
+        self.assertEqual(
+            len(response.context['page_obj'].object_list),
+            settings.PAGE_SIZE
+        )
 
     def test_last_page_content(self):
         page_num = 2

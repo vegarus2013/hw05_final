@@ -163,36 +163,23 @@ class PaginatorViewsTest(TestCase):
 
     def setUp(self):
         self.guest_client = Client()
+        cache.clear()
 
-    def test_first_page_content(self):
-        response = self.guest_client.get(name_reverses['index'])
-        self.assertEqual(
-            len(response.context['page_obj'].object_list),
-            settings.PAGE_SIZE
-        )
-        response = self.guest_client.get(name_reverses['group'])
-        self.assertEqual(
-            len(response.context['page_obj'].object_list),
-            settings.PAGE_SIZE
-        )
-        response = self.guest_client.get(name_reverses['profile'])
-        self.assertEqual(
-            len(response.context['page_obj'].object_list),
-            settings.PAGE_SIZE
-        )
-
-    def test_last_page_content(self):
-        page_num = 2
-        responses = [
-            self.guest_client.get(name_reverses['index'], {'page': page_num}),
-            self.guest_client.get(name_reverses['group'], {'page': page_num}),
-            self.guest_client.get(name_reverses['profile'], {'page': page_num})
+    def test_page_content(self):
+        page_num = 1
+        pages = [
+            [name_reverses['index'], settings.PAGE_SIZE],
+            [f"{name_reverses['index']}?page=2", page_num],
+            [name_reverses['group'], settings.PAGE_SIZE],
+            [f"{name_reverses['group']}?page=2", page_num],
+            [name_reverses['profile'], settings.PAGE_SIZE],
+            [f"{name_reverses['profile']}?page=2", page_num]
         ]
-
-        for response in responses:
-            with self.subTest(response=response):
+        for url, page in pages:
+            with self.subTest(url=url):
+                response = self.guest_client.get(url)
                 self.assertEqual(
-                    len(response.context['page_obj'].object_list), 1)
+                    len(response.context['page_obj'].object_list), page)
 
 
 class FollowViewsTest(TestCase):
